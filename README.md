@@ -1,5 +1,5 @@
 # editorjs-md-parser
-Editor.js markdown parser with dinamically import/export functions.
+Editor.js markdown parser with dinamically import/export functions.\
 Forked from https://github.com/stejul/editorjs-markdown-parser, and converted from yarn into an npm package.
 
 ##### Additional capabilities and changes:
