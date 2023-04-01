@@ -1,6 +1,12 @@
 {
+  "name": "editorjs-md-parser",
+  "version": "0.0.3",
+  "description": "Import from markdown and export editorjs data to markdown",
+  "author": {
+    "name": "Paolo William Carrara"
+  },
   "scripts": {
-    "build": "webpack --mode production",
+    "build": "webpack --mode production && npm link",
     "watch": "webpack --mode development --watch",
     "dev": "webpack-dev-server"
   },
@@ -17,13 +23,11 @@
     "webpack-dev-server": "^3.11.0",
     "webpack-merge-and-include-globally": "^2.1.26"
   },
-  "name": "editorjs-md-parser",
-  "description": "Import from markdown and export editorjs data to markdown, with and without file upload",
-  "version": "0.0.1",
   "main": "./dist/bundle.js",
   "dependencies": {
     "css-loader": "^5.0.0",
     "remark": "^13.0.0",
+    "remark-parse": "^9.0.0",
     "require": "^2.4.20",
     "style-loader": "^2.0.0"
   }

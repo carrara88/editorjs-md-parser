@@ -9,6 +9,37 @@ import { parseCodeToMarkdown } from './BlockTypeParsers/CodeTypeParser';
 import { fileDownloadHandler } from './FileHandler';
 
 /**
+ * Parse editor data blocks to markdown syntax 
+ */
+export async function parseToMarkdown(blocks) {
+  const parsedData = blocks.map((item) => {
+    // iterate through editor data and parse the single blocks to markdown syntax
+    switch (item.type) {
+      case 'header':
+        return parseHeaderToMarkdown(item.data);
+      case 'paragraph':
+        return parseParagraphToMarkdown(item.data);
+      case 'list':
+        return parseListToMarkdown(item.data);
+      case 'delimiter':
+        return parseDelimiterToMarkdown(item);
+      case 'image':
+        return parseImageToMarkdown(item.data);
+      case 'quote':
+        return parseQuoteToMarkdown(item.data);
+      case 'checkbox':
+        return parseCheckboxToMarkdown(item.data);
+      case 'code':
+        return parseCodeToMarkdown(item.data);
+      case 'checklist':
+        return parseCheckboxToMarkdown(item.data);
+      default:
+        break;
+    }
+  });
+  return parsedData.join('\n');
+}
+/**
  * Markdown Parsing class
  */
 export default class MarkdownParser {
@@ -16,10 +47,14 @@ export default class MarkdownParser {
    * creates the Parser plugin
    * {editorData, api functions} - necessary to interact with the editor
    */
-  constructor({ data, api }) {
+  constructor({ data, api, config }) {
     this.data = data;
     this.api = api;
+    this.config = config || {};
+    this.config.filename = this.config.filename || 'download';
+    this.config.extension = this.config.extension || 'md';
   }
+
 
   /**
    * @return Plugin data such as title and icon
@@ -34,61 +69,50 @@ export default class MarkdownParser {
   /**
    * @return empty div and run the export funtion
    */
-  render() {
+  async render() {
     const doc = document.createElement('div');
-    const content = parseToMarkdown();
+    const data = await this.api.saver.save();
+    const content = await this.parse(data.blocks);
     this.download(content);
     return doc;
   }
 
-  async download(content) {
+  getTimeStamp() { 
     const today = new Date();
     const dd = String(today.getDate()).padStart(2, '0');
     const mm = String(today.getMonth() + 1).padStart(2, '0'); // January is 0!
     const yyyy = today.getFullYear();
-   // take parsed data and create a markdown file
-   fileDownloadHandler(content, `entry_${dd}-${mm}-${yyyy}.md`);
+    const hh = today.getHours();
+    const min = today.getMinutes();
+    const sec = today.getSeconds();
+    return `_${dd}-${mm}-${yyyy}_${hh}-${min}-${sec}`;
   }
+
+  /**
+   * Function which takes parsed data and creates a markdown file download 
+   */
+  async download(content) {
+
+    const timestamp = this.config.timestamp ? this.getTimeStamp() : '';
+    // take parsed data and create a markdown file
+    fileDownloadHandler(content, `${this.config.filename}${timestamp}.${this.config.extension}`);
+    if(this.config.callback) {
+      this.config.callback(content);
+    }
+  }
+
   /**
    * Function which takes saved editor data and runs the different parsing helper functions
    * @return Markdown file download
    */
-  async parseToMarkdown() {
-    
-    const initialData = {};
-    const data = await this.api.saver.save();
-
-    initialData.content = data.blocks;
-
-    const parsedData = initialData.content.map((item) => {
-      // iterate through editor data and parse the single blocks to markdown syntax
-      switch (item.type) {
-        case 'header':
-          return parseHeaderToMarkdown(item.data);
-        case 'paragraph':
-          return parseParagraphToMarkdown(item.data);
-        case 'list':
-          return parseListToMarkdown(item.data);
-        case 'delimiter':
-          return parseDelimiterToMarkdown(item);
-        case 'image':
-          return parseImageToMarkdown(item.data);
-        case 'quote':
-          return parseQuoteToMarkdown(item.data);
-        case 'checkbox':
-          return parseCheckboxToMarkdown(item.data);
-        case 'code':
-          return parseCodeToMarkdown(item.data);
-        case 'checklist':
-          return parseCheckboxToMarkdown(item.data);
-        default:
-          break;
-      }
-    });
-
-    return parsedData.join('\n');
+  async parse(blocks) {
+    const parsedData = await parseToMarkdown(blocks);
+    return parsedData;
   }
 
+  /*
+   * Saves the plugin data into JSON format (used as placeholder for UI)
+  */
   save() {
     return {
       message: 'Downloading Markdown',
