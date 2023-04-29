@@ -23,7 +23,8 @@
     "webpack-dev-server": "^3.11.0",
     "webpack-merge-and-include-globally": "^2.1.26"
   },
-  "main": "./dist/bundle.js",
+  "main": "dist/index.js",
+  "typings": "src/index",
   "dependencies": {
     "css-loader": "^5.0.0",
     "remark": "^13.0.0",
